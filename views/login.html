@@ -19,7 +19,7 @@
 					<img portrait_id="1" src="/static/images/user/1.png" alt="portrait_1">
 				</p>
 				<p class="select_portrait">
-					<img portrait_id="1" src="/static/images/user/1.png" alt="portrait_1" class="t">
+					<img portrait_id="1" src="/static/images/user/1.png" alt="portrait_1">
 					<img portrait_id="2" src="/static/images/user/2.png" alt="portrait_1">
 					<img portrait_id="3" src="/static/images/user/3.png" alt="portrait_1">
 					<img portrait_id="4" src="/static/images/user/4.png" alt="portrait_1">
@@ -49,6 +49,18 @@
 	</div>
 </body>
 <script>
+	// hover then click to change user's avatar
+	$(document).ready(function() {
+		$('.select_portrait img').hover(function() {
+			var portrait_id = $(this).attr('portrait_id');
+			$('.user_portrait img').attr('src', '/static/images/user/' + portrait_id + '.png');
+		});
+		$('.select_portrait img').click(function() {
+			var portrait_id = $(this).attr('portrait_id');
+			$('.user_portrait img').attr('portrait_id', portrait_id);
+		})
+	})
+
 	// check username and password validity
 	function check_username_pwd(username, pwd) {
 		if (username.length < 2) {
@@ -66,7 +78,7 @@
 	$('#login').click(function(event) {
 		let username = $('.login input[type=text]').val();
 		let pwd = $('.login input[type=password]').val();
-		console.log(username, pwd)
+		let avatar_id = $('.user_portrait img').attr('portrait_id')
 
 		let check = check_username_pwd(username, pwd);
 		if (!check) {
@@ -76,6 +88,7 @@
 		$.post("/login", {
 			username: username,
 			password: pwd,
+			avatar_id: avatar_id
 		}, function(res) {
 			if (res.code != 0) {
 				alert(res.msg);
