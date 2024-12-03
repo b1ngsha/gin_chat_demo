@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"gin_chat_demo/config"
+	"gin_chat_demo/models"
 	"gin_chat_demo/routes"
 	"log"
 	"net/http"
@@ -20,6 +21,8 @@ func init() {
 		}
 		log.Fatal(err)
 	}
+
+	models.InitDB()
 }
 
 func main() {
