@@ -5,6 +5,7 @@ import (
 	"gin_chat_demo/config"
 	"gin_chat_demo/models"
 	"gin_chat_demo/routes"
+	"gin_chat_demo/views"
 	"log"
 	"net/http"
 
@@ -28,6 +29,7 @@ func init() {
 func main() {
 	port := viper.GetString("app.port")
 	router := routes.InitRoute()
+	router.SetHTMLTemplate(views.ViewsTemplate)
 	log.Println("start server ", "localhost:"+port)
 	http.ListenAndServe("127.0.0.1:" + port, router)
 }
