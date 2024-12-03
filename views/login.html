@@ -34,12 +34,11 @@
 				</p>
 				<p>
 					<div class="input-group">
-						<input type="text" class="form-control" placeholder="输入你的昵称，不填随机昵称……">
-						<span class="input-group-btn">
-							<button id="login" class="btn btn-default" type="button">
-								<span class="glyphicon glyphicon-arrow-right"></span>
-							</button>
-						</span>
+						<input type="text" class="form-control" placeholder="输入你的昵称，不少于两位" required>
+						<input type="password" class="form-control" placeholder="输入你的密码，不少于六位" required>
+						<button id="login" class="btn btn-default" type="button">
+							<span class="">登录/注册</span>
+						</button>
 					</div>
 				</p>
 			</div>
@@ -49,4 +48,48 @@
 		</div>
 	</div>
 </body>
+<script>
+	// check username and password validity
+	function check_username_pwd(username, pwd) {
+		if (username.length < 2) {
+			alert("username too short, at least 2 characters");
+			return false;
+		}
+		if (pwd.length < 6) {
+			alert("password too short, at least 6 characters");
+			return false;
+		}
+		return true;
+	}
+
+	// click button to login
+	$('#login').click(function(event) {
+		let username = $('.login input[type=text]').val();
+		let pwd = $('.login input[type=password]').val();
+		console.log(username, pwd)
+
+		let check = check_username_pwd(username, pwd);
+		if (!check) {
+			return
+		}
+
+		$.post("/login", {
+			username: username,
+			password: pwd,
+		}, function(res) {
+			if (res.code != 0) {
+				alert(res.msg);
+				return false;
+			}
+			window.location.assign("/home");
+		})
+	});
+
+	// press enter to login
+	$(document).keyup(function(event) {
+		if (event.keyCode == 13) {
+			$('#login').trigger("click");
+		}
+	});
+</script>
 </html>
