@@ -12,9 +12,11 @@ var ChatDB *gorm.DB
 
 func InitDB() {
 	dsn := viper.GetString("mysql.dsn")
-	_, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+
+	var err error
+	ChatDB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatalln("gorm open mysql db error:", err)
+		log.Fatal("open mysql db error:", err)
 	}
 	return
 }

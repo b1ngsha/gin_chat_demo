@@ -17,6 +17,7 @@ func InitRoute() *gin.Engine {
 	r := router.Group("/", session.EnableCookieSession())
 	{
 		r.GET("/", controller.Index)
+		r.POST("/login", controller.Login)
 	}
 	return router
 }
