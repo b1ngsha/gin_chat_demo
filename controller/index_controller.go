@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"gin_chat_demo/service/session"
 	"gin_chat_demo/service/user"
 	"net/http"
 
@@ -13,4 +14,11 @@ func Index(c *gin.Context) {
 
 func Login(c *gin.Context) {
 	user.Login(c)
+}
+
+func Home(c *gin.Context) {
+	userInfo := session.GetUserInfo(c)
+	c.HTML(http.StatusOK, "index.html", gin.H{
+		"user_info": userInfo,
+	})
 }

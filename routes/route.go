@@ -18,6 +18,11 @@ func InitRoute() *gin.Engine {
 	{
 		r.GET("/", controller.Index)
 		r.POST("/login", controller.Login)
+
+		authorized := r.Group("/", session.SessionAuthMiddleware())
+		{
+			authorized.GET("/home", controller.Home)
+		}
 	}
 	return router
 }
