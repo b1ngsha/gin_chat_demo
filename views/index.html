@@ -38,42 +38,16 @@
       </div>
       <div class="main container">
         <div class="room_list">
+          {{ range .rooms }}
+
           <div class="col-xs-6 col-sm-6 col-md-4">
-            <a href="room.html" class="thumbnail">
-              <img src="/static/images/rooms/1.jpg" alt="聊天室1" />
-              <span><span class="glyphicon glyphicon-user"></span>18人</span>
+            <a href="/room/{{ .id }}" class="thumbnail">
+              <img src="/static/images/rooms/{{ .id }}.jpg" alt="聊天室{{ .id }}">
+              <span><span class="glyphicon glyphicon-user"></span>&nbsp;{{ .num }}</span>
             </a>
           </div>
-          <div class="col-xs-6 col-sm-6 col-md-4">
-            <a href="room.html" class="thumbnail">
-              <img src="/static/images/rooms/2.jpg" alt="聊天室2" />
-              <span><span class="glyphicon glyphicon-user"></span>13人</span>
-            </a>
-          </div>
-          <div class="col-xs-6 col-sm-6 col-md-4">
-            <a href="room.html" class="thumbnail">
-              <img src="/static/images/rooms/3.jpg" alt="聊天室3" />
-              <span><span class="glyphicon glyphicon-user"></span>825人</span>
-            </a>
-          </div>
-          <div class="col-xs-6 col-sm-6 col-md-4">
-            <a href="room.html" class="thumbnail">
-              <img src="/static/images/rooms/4.jpg" alt="聊天室4" />
-              <span><span class="glyphicon glyphicon-user"></span>421人</span>
-            </a>
-          </div>
-          <div class="col-xs-6 col-sm-6 col-md-4">
-            <a href="room.html" class="thumbnail">
-              <img src="/static/images/rooms/5.jpg" alt="聊天室5" />
-              <span><span class="glyphicon glyphicon-user"></span>523人</span>
-            </a>
-          </div>
-          <div class="col-xs-6 col-sm-6 col-md-4">
-            <a href="room.html" class="thumbnail">
-              <img src="/static/images/rooms/6.jpg" alt="聊天室6" />
-              <span><span class="glyphicon glyphicon-user"></span>254人</span>
-            </a>
-          </div>
+
+          {{ end }}
         </div>
       </div>
     </div>
