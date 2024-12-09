@@ -1,10 +1,12 @@
 package controller
 
 import (
+	"gin_chat_demo/models"
 	"gin_chat_demo/service/session"
 	"gin_chat_demo/service/user"
 	"gin_chat_demo/websocket"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -29,6 +31,19 @@ func Home(c *gin.Context) {
 	}
 	c.HTML(http.StatusOK, "index.html", gin.H{
 		"rooms":     rooms,
+		"user_info": userInfo,
+	})
+}
+
+func Room(c *gin.Context) {
+	roomIdStr := c.Param("room_id")
+	roomId, _ := strconv.Atoi(roomIdStr)
+	userInfo := session.GetUserInfo(c)
+	msgList := models.GetRoomMsg(roomId)
+	c.HTML(http.StatusOK, "room.html", gin.H{
+		"room_id":   roomId,
+		"msg_list":  msgList,
+		"msg_count": len(msgList),
 		"user_info": userInfo,
 	})
 }

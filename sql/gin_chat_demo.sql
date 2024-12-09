@@ -1,13 +1,16 @@
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
+CREATE DATABASE IF NOT EXISTS `gin_chat_demo` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `gin_chat_demo`;
+
 -- ----------------------------
 -- Table structure for messages
 -- ----------------------------
 DROP TABLE IF EXISTS `messages`;
 CREATE TABLE `messages`  (
   `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL COMMENT '用户ID',
+  `from_user_id` int(11) NOT NULL COMMENT '用户ID',
   `room_id` int(11) NOT NULL COMMENT '房间ID',
   `to_user_id` int(11) NULL DEFAULT 0 COMMENT '私聊用户ID',
   `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '聊天内容',
@@ -16,7 +19,7 @@ CREATE TABLE `messages`  (
   `updated_at` datetime(0) NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(0),
   `deleted_at` datetime(0) NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
-  INDEX `idx_user_id`(`user_id`) USING BTREE
+  INDEX `idx_user_id`(`from_user_id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------

@@ -22,6 +22,7 @@ func InitRoute() *gin.Engine {
 		authorized := r.Group("/", session.SessionAuthMiddleware())
 		{
 			authorized.GET("/home", controller.Home)
+			authorized.GET("/room/:room_id", controller.Room)
 		}
 	}
 	return router
