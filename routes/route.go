@@ -4,6 +4,7 @@ import (
 	"gin_chat_demo/controller"
 	"gin_chat_demo/service/session"
 	"gin_chat_demo/views"
+	"gin_chat_demo/websocket"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,6 +19,7 @@ func InitRoute() *gin.Engine {
 	{
 		r.GET("/", controller.Index)
 		r.POST("/login", controller.Login)
+		r.GET("/ws", websocket.Start)
 
 		authorized := r.Group("/", session.SessionAuthMiddleware())
 		{
