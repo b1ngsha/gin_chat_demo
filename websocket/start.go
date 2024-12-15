@@ -9,5 +9,5 @@ func GetOnlineUserCountByRoom(roomId int) int {
 }
 
 func Start(c *gin.Context) {
-	WsServer.RunWebSocket(WsServer)
+	WsServer.RunWebSocket(c)
 }
