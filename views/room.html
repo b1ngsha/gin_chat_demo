@@ -16,7 +16,7 @@
 	<div class="scrollbar-macosx">
 		<div class="header">
 			<div class="toptext">
-				<a href="index.html">
+				<a href="/home">
 					<span class="glyphicon glyphicon-arrow-left"></span> 返回大厅
 				</a>
 			</div>
@@ -36,6 +36,7 @@
 						</div>
 					</div>
 				</li>
+                <li><a href="javascript:;" class="_logout">退出登录</a></li>
 			</ul>
 			<div class="clapboard hidden"></div>
 		</div>
@@ -110,8 +111,26 @@
 			room_id: {{ .room_id }},
 			avatar_id: {{ .user_info.avatar_id }},
 		};
-        console.log(user);
 		WebSocketConnect(user);
+        toLow();
 	});
+</script>
+
+<script>
+    function clearCookie() {
+        let date = new Date();
+        date.setTime(date.getTime() - 10000);
+        let keys = document.cookie.match(/[^ =;]+(?=\=)/g);
+        if (keys) {
+            for (let i = keys.length; i--;) {
+                document.cookie = keys[i] + '=0; expires=' + date.toGMTString() + '; path=/';
+            }
+        }
+    }
+
+    $("._logout").click(function() {
+        clearCookie();
+        window.location.assign("/");
+    })
 </script>
 </html>
