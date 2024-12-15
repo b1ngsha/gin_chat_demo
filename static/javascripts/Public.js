@@ -1,4 +1,7 @@
 const msgTypeOnline = 1;
+const msgTypeGetUserList = 4;
+
+let ws = new WebSocket("ws://127.0.0.1:8080/ws");
 
 /** scroll to lowest **/
 function toLow () {
@@ -15,8 +18,6 @@ function formatTime (time) {
 function WebSocketConnect (user_info) {
     if ("WebSocket" in window) {
         console.log("Your browser supports WebSocket!");
-
-        let ws = new WebSocket("ws://127.0.0.1:8080/ws");
 
         let chat_info = $('.main .chat_info');
 
@@ -44,6 +45,23 @@ function WebSocketConnect (user_info) {
             switch (received_msg.status) {
                 case msgTypeOnline:
                     chat_info.html(chat_info.html() + '<li class="system_info"> <span>' + "[" + received_msg.username + "] " + time + " enter" + '</span></li>');
+                    break;
+                case msgTypeGetUserList:
+                    $(".popover-title").html(received_msg.count + "users online.")
+                    $.each(received_msg.list, function (index, item) {
+                        if (received_msg.user_id == item.user_id) {
+                            $('.ul-user-list').html(
+                                $('.ul-user-list').html() +
+                                '<li style="pointer-events: none;" class="li-user-item" data-user_id=' + item.user_id + ' data-username=' + item.username + ' data-room_id=' + item.room_id + ' data-avatar_id=' + item.avatar_id + '  ><img src="/static/images/user/' + item.avatar_id + '.png" alt=""><b>' + " " + item.username + '</b>' + '</li>'
+                            );
+                        } else {
+                            $('.ul-user-list').html(
+                                $('.ul-user-list').html() +
+                                '<li class="li-user-item" data-user_id=' + item.user_id + ' data-username=' + item.username + ' data-room_id=' + item.room_id + ' data-avatar_id=' + item.avatar_id + '><img src="/static/images/user/' +
+                                item.avatar_id + '.png" alt=""><b>' + " " + item.username + '</b>' + '</li>'
+                            );
+                        }
+                    })
             }
         }
 

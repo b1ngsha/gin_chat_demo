@@ -22,7 +22,8 @@ var (
 )
 
 const (
-	msgTypeOnline = 1
+	msgTypeOnline      = 1
+	msgTypeGetUserList = 4
 )
 
 type Server struct {
@@ -38,14 +39,16 @@ type Client struct {
 }
 
 type Message struct {
-	FromUserId uint   `json:"from_user_id"`
-	Username   string `json:"username"`
-	AvatarId   string `json:"avatar_id"`
-	ToUserId   uint   `json:"to_user_id"`
-	Content    string `json:"content"`
-	ImageUrl   string `json:"image_url"`
-	RoomId     int    `json:"room_id"`
-	Time       int64  `json:"time"`
+	FromUserId uint          `json:"from_user_id"`
+	Username   string        `json:"username"`
+	AvatarId   string        `json:"avatar_id"`
+	ToUserId   uint          `json:"to_user_id"`
+	Content    string        `json:"content"`
+	ImageUrl   string        `json:"image_url"`
+	RoomId     int           `json:"room_id"`
+	Time       int64         `json:"time"`
+	Count      int           `json:"count"`
+	List       []interface{} `json:"list"`
 
 	Conn   *websocket.Conn `json:"conn"`
 	Status int             `json:"status"`
@@ -96,9 +99,9 @@ func read(conn *websocket.Conn, channel chan<- struct{}) {
 				RoomId:     clientMsg.RoomId,
 				AvatarId:   clientMsg.AvatarId,
 			}
-			serverMsgObject := getServerMsgObject(clientMsg.Status, conn)
-			chMsg <- serverMsgObject
 		}
+		serverMsgObject := getServerMsgObject(clientMsg.Status, conn)
+		chMsg <- serverMsgObject
 	}
 }
 
@@ -120,6 +123,10 @@ func write(channel <-chan struct{}) {
 			switch msg.Status {
 			case msgTypeOnline:
 				notify(msg.Conn, string(serverMsgStr))
+			case msgTypeGetUserList:
+				chNotify <- 1
+				msg.Conn.WriteMessage(websocket.TextMessage, serverMsgStr)
+				<-chNotify
 			}
 
 			// TODO handle offline
@@ -173,6 +180,13 @@ func getServerMsgObject(status int, conn *websocket.Conn) Message {
 		FromUserId: clientMsg.FromUserId,
 		Time:       time.Now().UnixNano() / 1e6,
 	}
+
+	if status == msgTypeGetUserList {
+		userList := rooms[clientMsg.RoomId]
+		message.Count = len(userList)
+		message.List = userList
+	}
+
 	return message
 }
 
