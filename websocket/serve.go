@@ -1,16 +1,28 @@
 package websocket
 
 import (
+	"encoding/json"
+	"gin_chat_demo/utils"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/jianfengye/collection"
 )
 
 var (
-	wsUpgrader     = websocket.Upgrader{}
-	rooms          = make(map[int][]interface{})
+	wsUpgrader = websocket.Upgrader{}
+	rooms      = make(map[int][]interface{})
+	clientMsg  = Message{}
+	enterRooms = make(chan Client)
+	chNotify   = make(chan int, 1)
+	chMsg      = make(chan Message)
+)
+
+const (
+	msgTypeOnline = 1
 )
 
 type Server struct {
@@ -68,12 +80,25 @@ func read(conn *websocket.Conn, channel chan<- struct{}) {
 			return
 		}
 		log.Println("client message:", string(message), conn.RemoteAddr())
+		json.Unmarshal(message, &clientMsg)
 
 		// TODO 处理心跳响应
 
 		// TODO maybe 加锁
 
-		// TODO 服务端返回响应
+		// Handle client online msg
+		if clientMsg.Status == msgTypeOnline {
+			enterRooms <- Client{
+				Conn:       conn,
+				RemoteAddr: conn.RemoteAddr().String(),
+				UserId:     clientMsg.FromUserId,
+				Username:   clientMsg.Username,
+				RoomId:     clientMsg.RoomId,
+				AvatarId:   clientMsg.AvatarId,
+			}
+			serverMsgObject := getServerMsgObject(clientMsg.Status, conn)
+			chMsg <- serverMsgObject
+		}
 	}
 }
 
@@ -88,15 +113,76 @@ func write(channel <-chan struct{}) {
 		select {
 		case <-channel:
 			return
-			// TODO handle conn clients
-
-			// TODO handle clients messages
+		case client := <-enterRooms:
+			handleClientConn(client.Conn)
+		case msg := <-chMsg:
+			serverMsgStr, _ := json.Marshal(msg)
+			switch msg.Status {
+			case msgTypeOnline:
+				notify(msg.Conn, string(serverMsgStr))
+			}
 
 			// TODO handle offline
 		}
 	}
 }
 
+/** Remove old client object in rooms slice and add new one **/
+func handleClientConn(conn *websocket.Conn) {
+	objCollection := collection.NewObjCollection(rooms[clientMsg.RoomId])
+	retCollection := utils.Safety.ThreadSafetyDo(func() interface{} {
+		return objCollection.Reject(func(item interface{}, key int) bool {
+			// remove former client object in rooms slice
+			if item.(Client).UserId == clientMsg.FromUserId {
+				// use channel to sync, ensure the former client object has been removed
+				chNotify <- 1
+				item.(Client).Conn.WriteMessage(websocket.TextMessage, []byte(`{"status": -1, "data": []}`))
+				<-chNotify
+				return true
+			}
+			return false
+		})
+	}).(collection.ICollection)
+
+	retCollection = utils.Safety.ThreadSafetyDo(func() interface{} {
+		// add a new one
+		return retCollection.Append(Client{
+			Conn:       conn,
+			RemoteAddr: conn.RemoteAddr().String(),
+			UserId:     clientMsg.FromUserId,
+			Username:   clientMsg.Username,
+			RoomId:     clientMsg.RoomId,
+			AvatarId:   clientMsg.AvatarId,
+		})
+	}).(collection.ICollection)
+
+	interfaces, _ := retCollection.ToInterfaces()
+	rooms[clientMsg.RoomId] = interfaces
+}
+
 func (server *Server) GetOnlineUserCountByRoom(roomId int) int {
 	return len(rooms[roomId])
+}
+
+func getServerMsgObject(status int, conn *websocket.Conn) Message {
+	message := Message{
+		Status:     status,
+		Username:   clientMsg.Username,
+		Conn:       conn,
+		RoomId:     clientMsg.RoomId,
+		FromUserId: clientMsg.FromUserId,
+		Time:       time.Now().UnixNano() / 1e6,
+	}
+	return message
+}
+
+func notify(conn *websocket.Conn, msg string) {
+	chNotify <- 1
+	room := rooms[clientMsg.RoomId]
+	for _, client := range room {
+		if client.(Client).RemoteAddr == conn.RemoteAddr().String() {
+			client.(Client).Conn.WriteMessage(websocket.TextMessage, []byte(msg))
+		}
+	}
+	<-chNotify
 }
