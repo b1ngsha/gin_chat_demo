@@ -25,3 +25,15 @@ func GetRoomMsg(roomId int) []map[string]interface{} {
 		Scan(&results)
 	return results
 }
+
+func GetPrivateMsg(fromUserId, toUserId string) []map[string]interface{} {
+	var results []map[string]interface{}
+	ChatDB.Model(&Message{}).
+		Select("messages.*, users.username, users.avatar_id").
+		Joins("INNER join users on users.id = messages.from_user_id").
+		Where("messages.from_user_id = ? and messages.to_user_id = ?", fromUserId, toUserId).
+		Or("messages.from_user_id = ? and messages.to_user_id = ?", toUserId, fromUserId).
+		Order("messages.id desc").
+		Scan(&results)
+	return results
+}

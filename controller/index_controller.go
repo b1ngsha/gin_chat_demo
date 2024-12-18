@@ -47,3 +47,16 @@ func Room(c *gin.Context) {
 		"user_info": userInfo,
 	})
 }
+
+func PrivateChat(c *gin.Context) {
+	roomId := c.Query("room_id")
+	toUserId := c.Query("user_id")
+	userInfo := session.GetUserInfo(c)
+	fromUserId := strconv.Itoa(int(userInfo["user_id"].(uint)))
+	msgList := models.GetPrivateMsg(fromUserId, toUserId)
+	c.HTML(http.StatusOK, "private_chat.html", gin.H{
+		"room_id": roomId,
+		"user_info": userInfo,
+		"msg_list": msgList,
+	})
+}

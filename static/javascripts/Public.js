@@ -72,7 +72,5 @@ function WebSocketConnect (user_info) {
         ws.onerror = function (error) {
             console.log("WebSocket error: ", error);
         }
-
-
     }
 }
