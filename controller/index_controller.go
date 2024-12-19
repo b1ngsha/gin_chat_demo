@@ -39,7 +39,7 @@ func Room(c *gin.Context) {
 	roomIdStr := c.Param("room_id")
 	roomId, _ := strconv.Atoi(roomIdStr)
 	userInfo := session.GetUserInfo(c)
-	msgList := models.GetRoomMsg(roomId)
+	msgList := models.GetLimitedRoomMsg(roomId, 0)
 	c.HTML(http.StatusOK, "room.html", gin.H{
 		"room_id":   roomId,
 		"msg_list":  msgList,
@@ -53,10 +53,38 @@ func PrivateChat(c *gin.Context) {
 	toUserId := c.Query("user_id")
 	userInfo := session.GetUserInfo(c)
 	fromUserId := strconv.Itoa(int(userInfo["user_id"].(uint)))
-	msgList := models.GetPrivateMsg(fromUserId, toUserId)
+	msgList := models.GetLimitedPrivateMsg(fromUserId, toUserId, 0)
 	c.HTML(http.StatusOK, "private_chat.html", gin.H{
-		"room_id": roomId,
+		"room_id":   roomId,
 		"user_info": userInfo,
-		"msg_list": msgList,
+		"msg_list":  msgList,
+	})
+}
+
+func Pagination(c *gin.Context) {
+	roomId := c.Query("room_id")
+	toUserId := c.Query("to_user_id")
+	offset := c.Query("offset")
+
+	offsetInt, err := strconv.Atoi(offset)
+	if err != nil || offsetInt <= 0 {
+		offsetInt = 0
+	}
+
+	msgList := []map[string]interface{}{}
+	if toUserId != "" {
+		userInfo := session.GetUserInfo(c)
+		userIdStr := strconv.Itoa(int(userInfo["user_id"].(uint)))
+		msgList = models.GetLimitedPrivateMsg(userIdStr, toUserId, offsetInt)
+	} else {
+		roomIdInt, _ := strconv.Atoi(roomId)
+		msgList = models.GetLimitedRoomMsg(roomIdInt, offsetInt)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code": 0,
+		"data": map[string]interface{}{
+			"list": msgList,
+		},
 	})
 }

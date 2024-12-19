@@ -26,6 +26,7 @@ func InitRoute() *gin.Engine {
 			authorized.GET("/home", controller.Home)
 			authorized.GET("/room/:room_id", controller.Room)
 			authorized.GET("/private_chat", controller.PrivateChat)
+			authorized.GET("/pagination", controller.Pagination)
 		}
 	}
 	return router

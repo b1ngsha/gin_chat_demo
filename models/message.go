@@ -13,7 +13,7 @@ type Message struct {
 	ImageUrl   string
 }
 
-func GetRoomMsg(roomId int) []map[string]interface{} {
+func GetLimitedRoomMsg(roomId int, offset int) []map[string]interface{} {
 	var results []map[string]interface{}
 	ChatDB.Model(&Message{}).
 		Select("messages.*, users.username, users.avatar_id").
@@ -21,12 +21,13 @@ func GetRoomMsg(roomId int) []map[string]interface{} {
 		Where("messages.room_id = ?", roomId).
 		Where("messages.to_user_id = -1").
 		Order("messages.id desc").
+		Offset(offset).
 		Limit(DefaultPageLimit).
 		Scan(&results)
 	return results
 }
 
-func GetPrivateMsg(fromUserId, toUserId string) []map[string]interface{} {
+func GetLimitedPrivateMsg(fromUserId, toUserId string, offset int) []map[string]interface{} {
 	var results []map[string]interface{}
 	ChatDB.Model(&Message{}).
 		Select("messages.*, users.username, users.avatar_id").
@@ -34,6 +35,8 @@ func GetPrivateMsg(fromUserId, toUserId string) []map[string]interface{} {
 		Where("messages.from_user_id = ? and messages.to_user_id = ?", fromUserId, toUserId).
 		Or("messages.from_user_id = ? and messages.to_user_id = ?", toUserId, fromUserId).
 		Order("messages.id desc").
+		Offset(offset).
+		Limit(DefaultPageLimit).
 		Scan(&results)
 	return results
 }
