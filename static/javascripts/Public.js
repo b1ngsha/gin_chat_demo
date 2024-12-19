@@ -1,7 +1,7 @@
 const msgTypeOnline = 1;
 const msgTypeGetUserList = 4;
 
-let ws = new WebSocket("ws://127.0.0.1:8080/ws");
+var ws;
 
 /** scroll to lowest **/
 function toLow () {
@@ -18,6 +18,8 @@ function formatTime (time) {
 function WebSocketConnect (user_info) {
     if ("WebSocket" in window) {
         console.log("Your browser supports WebSocket!");
+
+        ws = new WebSocket("ws://127.0.0.1:8080/ws");
 
         let chat_info = $('.main .chat_info');
 
