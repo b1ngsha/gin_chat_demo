@@ -2,10 +2,12 @@ package websocket
 
 import (
 	"encoding/json"
+	"gin_chat_demo/models"
 	"gin_chat_demo/utils"
 	"log"
 	"net/http"
 	"time"
+	"unicode/utf8"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -23,6 +25,7 @@ var (
 
 const (
 	msgTypeOnline      = 1
+	msgTypeSend        = 3
 	msgTypeGetUserList = 4
 )
 
@@ -121,7 +124,7 @@ func write(channel <-chan struct{}) {
 		case msg := <-chMsg:
 			serverMsgStr, _ := json.Marshal(msg)
 			switch msg.Status {
-			case msgTypeOnline:
+			case msgTypeOnline, msgTypeSend:
 				notify(msg.Conn, string(serverMsgStr))
 			case msgTypeGetUserList:
 				chNotify <- 1
@@ -179,6 +182,22 @@ func getServerMsgObject(status int, conn *websocket.Conn) Message {
 		RoomId:     clientMsg.RoomId,
 		FromUserId: clientMsg.FromUserId,
 		Time:       time.Now().UnixNano() / 1e6,
+	}
+
+	if status == msgTypeSend {
+		message.AvatarId = clientMsg.AvatarId
+		message.Content = clientMsg.Content
+
+		// save message to database
+		messageEntity := models.Message{}
+		content := clientMsg.Content
+		if utf8.RuneCountInString(content) > 800 {
+			messageEntity.Content = string([]rune(content)[:800])
+		}
+		messageEntity.FromUserId = clientMsg.FromUserId
+		messageEntity.RoomId = clientMsg.RoomId
+		messageEntity.ToUserId = clientMsg.ToUserId
+		models.ChatDB.Create(&messageEntity)
 	}
 
 	if status == msgTypeGetUserList {

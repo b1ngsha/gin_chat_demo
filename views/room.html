@@ -276,12 +276,8 @@
       );
 
       if ($.trim(message) !== "") {
-        let to_user_id = "0";
+        let to_user_id = 0;
         let status = msgTypeSend;
-        if (isPrivateChat()) {
-          to_user_id = getUrlParams("to_user_id");
-          status = msgTypePrivateChat;
-        }
 
         let date = new Date();
         let time = date.toLocaleDateString() + date.toLocaleTimeString();
@@ -289,26 +285,24 @@
         let user_portrait = $(".room").attr("data-avatar_id");
         $(".main .chat_info").html(
           $(".main .chat_info").html() +
-            `<li class="right">
-				<img src="/static/images/user/${user_portrait}.png" alt="">
-				<b>${username}</b>
-				<i>
-					<div class="">${message}</div>
-				</i>
-			</li>`
+          `<li class="right">
+            <img src="/static/images/user/${user_portrait}.png" alt="">
+            <b>${username}</b>
+            <i>
+              <div class="">${message}</div>
+            </i>
+          </li>`
         );
 
         let send_data = JSON.stringify({
           status: status,
-          data: {
-            from_user_id: $(".room").attr("data-user_id").toString(),
-            username: username,
-            avatar_id: user_portrait,
-            room_id: $(".room").attr("data-room_id"),
-            content: message,
-            image_url: "",
-            to_user_id: to_user_id,
-          },
+          from_user_id: $(".room").attr("data-user_id"),
+          username: username,
+          avatar_id: user_portrait,
+          room_id: $(".room").attr("data-room_id"),
+          content: message,
+          image_url: "",
+          to_user_id: to_user_id,
         });
         ws.send(send_data);
 

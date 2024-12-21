@@ -108,5 +108,67 @@
 </script>
 
 <script>
-    
-</script>
+    $("#emojionearea2").emojioneArea({
+      pickerPosition: "top",
+      tonesStype: "radio",
+      events: {
+        keyup: function (editor, event) {
+          if (event.which == 13) {
+            $("#subxx").click();
+          }
+        },
+      },
+    });
+
+    $("#emojionearea2")[0].emojioneArea.setFocus();
+    // send message
+    $("#subxx").click(function (event) {
+      let message = $("#emojionearea2")[0].emojioneArea.getText();
+      message = message.replace(/\</g, "&lt;");
+      message = message.replace(/\>/g, "&gt;");
+      message = message.replace(/\n/g, "<br/>");
+      message = message.replace(
+        /\[em_([0-9]*)\]/g,
+        '<img src="images/face/$1.gif" alt="" />'
+      );
+
+      if ($.trim(message) !== "") {
+        to_user_id = getUrlParams("to_user_id");
+        status = msgTypePrivateChat;
+
+        let date = new Date();
+        let time = date.toLocaleDateString() + date.toLocaleTimeString();
+        let username = $(".room").attr("data-username");
+        let user_portrait = $(".room").attr("data-avatar_id");
+        $(".main .chat_info").html(
+          $(".main .chat_info").html() +
+            `<li class="right">
+				<img src="/static/images/user/${user_portrait}.png" alt="">
+				<b>${username}</b>
+				<i>
+					<div class="">${message}</div>
+				</i>
+			</li>`
+        );
+
+        let send_data = JSON.stringify({
+          status: status,
+          data: {
+            from_user_id: $(".room").attr("data-user_id").toString(),
+            username: username,
+            avatar_id: user_portrait,
+            room_id: $(".room").attr("data-room_id"),
+            content: message,
+            image_url: "",
+            to_user_id: to_user_id,
+          },
+        });
+        ws.send(send_data);
+
+        toLow();
+
+        $("#emojionearea2")[0].emojioneArea.setText("");
+        $("#emojionearea2")[0].emojioneArea.setFocus();
+      }
+    });
+  </script>

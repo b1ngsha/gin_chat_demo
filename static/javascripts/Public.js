@@ -17,10 +17,6 @@ function formatTime (time) {
     return date.toJSON().substring(0, 19).replace('T', ' ');
 }
 
-function isPrivateChat() {
-    return window.location.href.search("private-chat") > 0;
-}
-
 function getUrlParam(key) {
     let query = window.location.search.substring(1);
     let keys = query.split("&");
@@ -68,6 +64,7 @@ function WebSocketConnect (user_info) {
                     break;
                 case msgTypeGetUserList:
                     $(".popover-title").html(received_msg.count + "users online.")
+                    console.log("user list:", received_msg);
                     $.each(received_msg.list, function (index, item) {
                         if (received_msg.user_id == item.user_id) {
                             $('.ul-user-list').html(
@@ -81,7 +78,23 @@ function WebSocketConnect (user_info) {
                                 item.avatar_id + '.png" alt=""><b>' + " " + item.username + '</b>' + '</li>'
                             );
                         }
-                    })
+                    });
+                    break;
+                case msgTypeSend:
+                    if (received_msg.from_user_id != user_info.user_id) {
+                        chat_info.html(
+                            chat_info.html() +
+                            `<li class="left">
+                                <img src="/static/images/user/${received_msg.avatar_id}.png" alt="">
+                                <b>${received_msg.username}</b>
+                                <i>${time}</i>
+                                <div class="aaa">
+                                    ${received_msg.content}
+                                </div>
+                            </li>`
+                        );
+                    }
+                    break;
             }
         }
 
