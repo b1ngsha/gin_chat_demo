@@ -80,3 +80,10 @@ function WebSocketConnect (user_info) {
         alert("Your browser does not support WebSocket!");
     }
 }
+
+$(document).ready(function() {
+    // close websocket connection before current window unload
+    window.addEventListener("beforeunload", function() {
+        ws.close();
+    });
+})
