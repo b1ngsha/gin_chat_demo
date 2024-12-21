@@ -25,6 +25,7 @@ var (
 
 const (
 	msgTypeOnline      = 1
+	msgTypePrivateChat = 2
 	msgTypeSend        = 3
 	msgTypeGetUserList = 4
 )
@@ -79,7 +80,6 @@ func read(conn *websocket.Conn, channel chan<- struct{}) {
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
-			// TODO 离线通知
 			log.Println("read message error:", err)
 			conn.Close()
 			close(channel)
@@ -87,10 +87,6 @@ func read(conn *websocket.Conn, channel chan<- struct{}) {
 		}
 		log.Println("client message:", string(message), conn.RemoteAddr())
 		json.Unmarshal(message, &clientMsg)
-
-		// TODO 处理心跳响应
-
-		// TODO maybe 加锁
 
 		// Handle client online msg
 		if clientMsg.Status == msgTypeOnline {
@@ -126,13 +122,18 @@ func write(channel <-chan struct{}) {
 			switch msg.Status {
 			case msgTypeOnline, msgTypeSend:
 				notify(msg.Conn, string(serverMsgStr))
+			case msgTypePrivateChat:
+				chNotify <- 1
+				toClient := findToUserConnClient()
+				if toClient != nil {
+					toClient.(Client).Conn.WriteMessage(websocket.TextMessage, serverMsgStr)
+				}
+				<-chNotify
 			case msgTypeGetUserList:
 				chNotify <- 1
 				msg.Conn.WriteMessage(websocket.TextMessage, serverMsgStr)
 				<-chNotify
 			}
-
-			// TODO handle offline
 		}
 	}
 }
@@ -184,7 +185,7 @@ func getServerMsgObject(status int, conn *websocket.Conn) Message {
 		Time:       time.Now().UnixNano() / 1e6,
 	}
 
-	if status == msgTypeSend {
+	if status == msgTypeSend || status == msgTypePrivateChat {
 		message.AvatarId = clientMsg.AvatarId
 		message.Content = clientMsg.Content
 
@@ -218,4 +219,15 @@ func notify(conn *websocket.Conn, msg string) {
 		}
 	}
 	<-chNotify
+}
+
+func findToUserConnClient() interface{} {
+	currentRoom := rooms[clientMsg.RoomId]
+	for _, client := range currentRoom {
+		userId := client.(Client).UserId
+		if userId == clientMsg.ToUserId {
+			return client
+		}
+	}
+	return nil
 }

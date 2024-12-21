@@ -149,16 +149,16 @@
   </body>
 
   <script>
-      $(document).ready(function() {
-      	let user = {
-      		user_id: {{ .user_info.user_id }},
-      		username: {{ .user_info.username }},
-      		room_id: {{ .room_id }},
-      		avatar_id: {{ .user_info.avatar_id }},
-      	};
-      	WebSocketConnect(user);
-    toLow();
-      });
+    $(document).ready(function() {
+    	let user = {
+    		user_id: {{ .user_info.user_id }},
+    		username: {{ .user_info.username }},
+    		room_id: {{ .room_id }},
+    		avatar_id: {{ .user_info.avatar_id }},
+    	};
+    	WebSocketConnect(user);
+      toLow();
+    });
   </script>
 
   <script>
@@ -285,7 +285,7 @@
         let user_portrait = $(".room").attr("data-avatar_id");
         $(".main .chat_info").html(
           $(".main .chat_info").html() +
-          `<li class="right">
+            `<li class="right">
             <img src="/static/images/user/${user_portrait}.png" alt="">
             <b>${username}</b>
             <i>

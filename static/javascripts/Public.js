@@ -1,9 +1,9 @@
 const msgTypeOnline = 1;
+const msgTypePrivateChat = 2;
 const msgTypeSend = 3;
 const msgTypeGetUserList = 4;
-const msgTypePrivateChat = 5;
 
-var ws;
+var ws = new WebSocket("ws://127.0.0.1:8080/ws");
 
 /** scroll to lowest **/
 function toLow () {
@@ -27,6 +27,10 @@ function getUrlParam(key) {
         }
     }
     return null;
+}
+
+function isPrivateChat() {
+	return window.location.href.search('private_chat') > 0;
 }
 
 function WebSocketConnect (user_info) {
@@ -56,11 +60,17 @@ function WebSocketConnect (user_info) {
 
         ws.onmessage = function (event) {
             let received_msg = JSON.parse(event.data);
+            console.log("111", received_msg);
             let time = formatTime(received_msg.time);
             console.log("Received:", received_msg);
             switch (received_msg.status) {
                 case msgTypeOnline:
                     chat_info.html(chat_info.html() + '<li class="system_info"> <span>' + "[" + received_msg.username + "] " + time + " enter" + '</span></li>');
+                    break;
+                case msgTypePrivateChat:
+                    if (!isPrivateChat()) {
+                        layer.msg(`${received_msg.username}: ${received_msg.content}`);
+                    }
                     break;
                 case msgTypeGetUserList:
                     $(".popover-title").html(received_msg.count + "users online.")
