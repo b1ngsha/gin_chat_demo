@@ -69,10 +69,14 @@ function WebSocketConnect (user_info) {
 
         ws.onclose = function (event) {
             console.log("WebSocket connection closed");
+            chat_info.html(chat_info.html() + '<li class="systeminfo"><span> ❌ Websocket connection broken. </span></li>');
+            toLow();
         }
 
         ws.onerror = function (error) {
             console.log("WebSocket error: ", error);
         }
+    } else {
+        alert("Your browser does not support WebSocket!");
     }
 }
