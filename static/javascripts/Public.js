@@ -1,5 +1,7 @@
 const msgTypeOnline = 1;
+const msgTypeSend = 3;
 const msgTypeGetUserList = 4;
+const msgTypePrivateChat = 5;
 
 var ws;
 
@@ -13,6 +15,22 @@ function toLow () {
 function formatTime (time) {
     let date = new Date(time + 8 * 3600 * 1000);
     return date.toJSON().substring(0, 19).replace('T', ' ');
+}
+
+function isPrivateChat() {
+    return window.location.href.search("private-chat") > 0;
+}
+
+function getUrlParam(key) {
+    let query = window.location.search.substring(1);
+    let keys = query.split("&");
+    for (let i = 0; i < keys.length; i++) {
+        let keyValue = keys[i].split("=");
+        if (keyValue[0] === key) {
+            return keyValue[1];
+        }
+    }
+    return null;
 }
 
 function WebSocketConnect (user_info) {
